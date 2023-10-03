@@ -6,8 +6,8 @@ import os
 
 
 logging.basicConfig(level=logging.WARNING)
-ADMIN_ID = str(os.environ.get('ADMIN_ID'))
-BOT_TOKEN = str(os.environ.get('BOT_TOKEN'))
+ADMIN_ID = str(os.environ.get("ADMIN_ID"))
+BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
 
 # storage = RedisStorage2(db=2)
 storage = MemoryStorage()
