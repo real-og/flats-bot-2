@@ -2,6 +2,17 @@ import requests
 import logging
 import time
 from ad import Ad
+from collections import deque
+
+
+def init_used_ids_kufar():
+    init_ids = []
+    response = requests.get(kufar_url, kufar_params)
+    kufar_ads = response.json().get('ads')
+    for kufar_ad in kufar_ads:
+        init_ids.append(kufar_ad.get('ad_id'))
+    init_ids.reverse()
+    return init_ids
 
 
 def generate_ad_from_kufar(kufar_ad: dict):
@@ -32,10 +43,9 @@ kufar_params = {'cat': '1010',
                 'size': '30',
                 'typ': 'let'}
 
-kufar_used_ids = []
+kufar_used_ids = deque(init_used_ids_kufar())
 
 while True:
-    print(1)
     response = requests.get(kufar_url, kufar_params)
 
     if response.status_code != 200:
@@ -57,6 +67,7 @@ while True:
 
             if ad_id not in kufar_used_ids:
                 kufar_used_ids.append(ad_id)
+                kufar_used_ids.popleft()
                 ad = generate_ad_from_kufar(kufar_ad)
                 ad.save()
 
