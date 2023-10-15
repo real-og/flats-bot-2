@@ -70,6 +70,7 @@ def poll_kufar():
                     kufar_used_ids.popleft()
                     ad = generate_ad_from_kufar(kufar_ad)
                     ad.save()
+                    ad.broadcast()
 
         except:
             logging.exception('КУФАР попытка взять JSON ответа')

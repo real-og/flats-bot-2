@@ -65,6 +65,7 @@ def poll_onliner():
                     onliner_used_ids.popleft()
                     ad = generate_ad_from_onliner(onliner_ad)
                     ad.save()
+                    ad.broadcast()
 
         except:
             logging.exception('ОНЛАЙНЕР попытка взять JSON ответа не удалась')
