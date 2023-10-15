@@ -1,10 +1,7 @@
 import datetime
 import csv
 import asyncio
-import sys
-from db import get_active_users
-
-sys.path.append('/Users/friend/Desktop/flats-bot-2')
+from src.shared.db import get_active_users
 from src.bot.loader import bot
 
 

@@ -2,7 +2,9 @@ import threading
 import logging
 from kufar_parser import poll_kufar
 from onliner_parser import poll_onliner
+import sys
 
+sys.path.append('/Users/friend/Desktop/flats-bot-2')
 
 logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
                     format="%(asctime)s %(levelname)s %(message)s")
