@@ -19,7 +19,7 @@ onliner_params = {'bounds[lb][lat]': '45.41737821965764',
 
 
 def init_used_ids_onliner():
-    init_ids = []
+    init_ids = [0 for i in range(10)] #to keep used_ids in collection bigger then amount of received ads
     response = requests.get(onliner_url, onliner_params)
     onliner_ads = response.json().get('apartments')
     for onliner_ad in onliner_ads:
