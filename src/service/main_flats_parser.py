@@ -1,7 +1,7 @@
 import threading
 import logging
-from kufar_parser import poll_kufar
-from onliner_parser import poll_onliner
+from service.kufar_parser import poll_kufar
+from service.onliner_parser import poll_onliner
 
 
 logging.basicConfig(level=logging.WARNING, filename="service/errors.log", filemode='w',

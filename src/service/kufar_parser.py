@@ -1,7 +1,7 @@
 import requests
 import logging
 import time
-from ad import Ad
+from service.ad import Ad
 from collections import deque
 
 
