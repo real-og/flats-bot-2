@@ -20,7 +20,7 @@ class Ad:
                          self.cost,
                          self.link,
                          ]
-        with open('service/ads.csv', mode='a', newline='') as file:
+        with open('src/service/ads.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(data_to_write)
 

@@ -1,10 +1,10 @@
 import threading
 import logging
-from service.kufar_parser import poll_kufar
-from service.onliner_parser import poll_onliner
+from kufar_parser import poll_kufar
+from onliner_parser import poll_onliner
 
 
-logging.basicConfig(level=logging.WARNING, filename="service/errors.log", filemode='w',
+logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
                     format="%(asctime)s %(levelname)s %(message)s")
 
 if __name__ == "__main__":
