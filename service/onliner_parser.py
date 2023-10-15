@@ -5,6 +5,19 @@ from ad import Ad
 from collections import deque
 
 
+error_timeout = 15
+regular_timeout = 10
+
+onliner_url = "https://r.onliner.by/sdapi/ak.api/search/apartments"
+onliner_params = {'bounds[lb][lat]': '45.41737821965764',
+                'bounds[lb][long]': '19.53972860486743',
+                'bounds[rt][lat]': '56.686967637946275',
+                'bounds[rt][long]': '32.15970564951255',
+                'order': 'created_at:desc',
+                'page': '1',
+                'v': '0.2754033164126508'}
+
+
 def init_used_ids_onliner():
     init_ids = []
     response = requests.get(onliner_url, onliner_params)
@@ -23,51 +36,38 @@ def generate_ad_from_onliner(onliner_ad: dict):
     return Ad(town, cost, link, source)
     
 
-# logging.basicConfig(level=logging.WARNING, filename="service/errors.log", filemode='w',
-#                     format="%(asctime)s %(levelname)s %(message)s")
 
-error_timeout = 15
-regular_timeout = 10
+def poll_onliner():
+    onliner_used_ids = deque(init_used_ids_onliner())
 
-onliner_url = "https://r.onliner.by/sdapi/ak.api/search/apartments"
-onliner_params = {'bounds[lb][lat]': '45.41737821965764',
-                'bounds[lb][long]': '19.53972860486743',
-                'bounds[rt][lat]': '56.686967637946275',
-                'bounds[rt][long]': '32.15970564951255',
-                'order': 'created_at:desc',
-                'page': '1',
-                'v': '0.2754033164126508'}
+    while True:
+        response = requests.get(onliner_url, onliner_params)
 
-onliner_used_ids = deque(init_used_ids_onliner())
-
-while True:
-    response = requests.get(onliner_url, onliner_params)
-
-    if response.status_code != 200:
-        logging.warning(f'Ответ ОНЛАЙНЕРА не 200, первые 100 символов:\n{response.text[:100]}')
-        time.sleep(error_timeout)
-        continue
-    try:
-        onliner_ads = response.json().get('apartments')
-
-        if onliner_ads is None or len(onliner_ads) == 0:
-            logging.warning(f'ОНЛАЙНЕР не вернул объявления:\n{onliner_ads[:100]}')
+        if response.status_code != 200:
+            logging.warning(f'Ответ ОНЛАЙНЕРА не 200, первые 100 символов:\n{response.text[:100]}')
+            time.sleep(error_timeout)
             continue
-        
-        for onliner_ad in onliner_ads:
-            ad_id = onliner_ad.get('id')
+        try:
+            onliner_ads = response.json().get('apartments')
 
-            if ad_id is None:
-                logging.warning(f'ОНЛАЙНЕР объявление не имеет id:\n{onliner_ad}')
+            if onliner_ads is None or len(onliner_ads) == 0:
+                logging.warning(f'ОНЛАЙНЕР не вернул объявления:\n{onliner_ads[:100]}')
+                continue
+            
+            for onliner_ad in onliner_ads:
+                ad_id = onliner_ad.get('id')
 
-            if ad_id not in onliner_used_ids:
-                onliner_used_ids.append(ad_id)
-                onliner_used_ids.popleft()
-                ad = generate_ad_from_onliner(onliner_ad)
-                ad.save()
+                if ad_id is None:
+                    logging.warning(f'ОНЛАЙНЕР объявление не имеет id:\n{onliner_ad}')
 
-    except:
-        logging.exception('ОНЛАЙНЕР попытка взять JSON ответа не удалась')
+                if ad_id not in onliner_used_ids:
+                    onliner_used_ids.append(ad_id)
+                    onliner_used_ids.popleft()
+                    ad = generate_ad_from_onliner(onliner_ad)
+                    ad.save()
 
-    finally:
-        time.sleep(regular_timeout)
+        except:
+            logging.exception('ОНЛАЙНЕР попытка взять JSON ответа не удалась')
+
+        finally:
+            time.sleep(regular_timeout)
