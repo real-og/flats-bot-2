@@ -46,6 +46,8 @@ subways = [Station('Малиновка', 53.849483, 27.474572), #0
 ]
 
 def get_closest_subway(latitude: float, longitude: float) -> Station:
+    if latitude is None or longitude is None:
+        return None
     result = None
     min_dist = math.inf
     for station in subways:

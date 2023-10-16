@@ -1,27 +1,37 @@
 import datetime
 import csv
 import asyncio
+from typing import List
+from dataclasses import dataclass
 from src.shared.db import get_active_users
 from src.bot.loader import bot
 
-
+@dataclass
 class Ad:
-    def __init__(self,
-                town: str,
-                cost: int,
-                link: str,
-                source: str):
-        self.town = town
-        self.cost = cost
-        self.link = link
-        self.source = source
+    town: str
+    photos: List[str]
+    cost: float
+    landlord: str
+    latitude: float
+    longitude: float
+    rooms_amount: float
+    link: str
+    source: str
+    subway_name: str
+    subway_dist: int
 
     def save(self):
         data_to_write = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                          self.source,
                          self.town,
                          self.cost,
+                         self.landlord,
+                         self.latitude,
+                         self.longitude,
+                         self.rooms_amount,
                          self.link,
+                         self.subway_name,
+                         self.subway_dist
                          ]
         with open('src/service/ads.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -42,7 +52,7 @@ class Ad:
         async def send_messages():
             tasks = []
             for user in active_users:
-                task = asyncio.create_task(send_telegram_message(user['id_tg'], self.link))
+                task = asyncio.create_task(send_telegram_message(user['id_tg'], self))
                 tasks.append(task)
             await asyncio.gather(*tasks)
             s = await bot.get_session()
