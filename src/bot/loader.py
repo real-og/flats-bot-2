@@ -10,8 +10,9 @@ import sys
 logging.basicConfig(level=logging.WARNING)
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
+ROOT_PATH = str(os.environ.get("ROOT_PATH"))
 
-sys.path.append('/Users/friend/Desktop/flats-bot-2')
+sys.path.append(ROOT_PATH)
 
 storage = RedisStorage2(db=2)
 # storage = MemoryStorage()

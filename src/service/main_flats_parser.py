@@ -1,11 +1,13 @@
 import sys
-sys.path.append('/Users/friend/Desktop/flats-bot-2')
+import os
+ROOT_PATH = str(os.environ.get("ROOT_PATH"))
+sys.path.append(ROOT_PATH)
 
 import threading
 import logging
 from kufar_parser import poll_kufar
 from onliner_parser import poll_onliner
-import sys
+
 
 logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
                     format="%(asctime)s %(levelname)s %(message)s")
