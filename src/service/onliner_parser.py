@@ -2,6 +2,7 @@ import requests
 import logging
 import time
 from ad import Ad
+from src.shared.subway_map import get_closest_subway
 from collections import deque
 
 
@@ -21,7 +22,13 @@ onliner_params = {'bounds[lb][lat]': '45.41737821965764',
 def init_used_ids_onliner():
     init_ids = [0 for i in range(10)] #to keep used_ids in collection bigger then amount of received ads
     response = requests.get(onliner_url, onliner_params)
-    onliner_ads = response.json().get('apartments')
+    try:
+        onliner_ads = response.json().get('apartments', [])
+    except:
+        onliner_ads = []
+        logging.error(f"Не удалось получить словарь при инициализации ОНЛАЙНЕР\n{response[:100]}")
+    if len(onliner_ads) == 0:
+        logging.warning('Онлайнер проблема с запросом инициализации')
     for onliner_ad in onliner_ads:
         init_ids.append(onliner_ad.get('id'))
     init_ids.reverse()
@@ -29,11 +36,35 @@ def init_used_ids_onliner():
 
 
 def generate_ad_from_onliner(onliner_ad: dict):
+    town = onliner_ad.get('location', dict()).get('address')
+    photos = []
+    if onliner_ad.get('photo'):
+        photos.append(onliner_ad.get('photo'))
+    cost = onliner_ad.get('price', dict()).get('amount')
+    landlord = onliner_ad.get('contact', dict()).get('owner')
+    if landlord == True:
+        landlord = 'Собственник'
+    elif landlord == False:
+        landlord = 'Агентство'
+    lat = onliner_ad.get('location', dict()).get('latitude')
+    lon = onliner_ad.get('location', dict()).get('longitude')
+    
+    rooms_amount = onliner_ad.get('rent_type')
+    if rooms_amount == 'room':
+        rooms_amount = 'Комната'
+    elif rooms_amount is not None:
+        rooms_amount = rooms_amount[0]
+
+    link = onliner_ad.get('url')
     source = 'onliner'
-    cost = onliner_ad['price']['amount']
-    town = onliner_ad['location']['address']
-    link = onliner_ad['url']
-    return Ad(town, cost, link, source)
+    subway = get_closest_subway(lat, lon)
+    subway_dist = None
+    subway_name = None
+    if subway:
+        subway_dist = subway.distance_to(lat, lon)
+        subway_name = subway.name
+        
+    return Ad(town, photos, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist)
     
 
 
