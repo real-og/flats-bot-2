@@ -72,7 +72,12 @@ def poll_onliner():
     onliner_used_ids = deque(init_used_ids_onliner())
 
     while True:
-        response = requests.get(onliner_url, onliner_params)
+        try:
+            response = requests.get(onliner_url, onliner_params)
+        except:
+            logging.error("ОЛАЙНЕР ошибка во время запроса")
+            time.sleep(error_timeout)
+            continue
 
         if response.status_code != 200:
             logging.warning(f'Ответ ОНЛАЙНЕРА не 200, первые 100 символов:\n{response.text[:100]}')

@@ -86,7 +86,12 @@ def poll_kufar():
 
     while True:
         kufar_params['size'] = 15
-        response = requests.get(kufar_url, kufar_params)
+        try:
+            response = requests.get(kufar_url, kufar_params)
+        except:
+            logging.error("КУФАР ошибка во время запроса")
+            time.sleep(error_timeout)
+            continue
 
         if response.status_code != 200:
             logging.warning(f'Ответ КУФАРА не 200, первые 100 символов:\n{response.text[:100]}')
