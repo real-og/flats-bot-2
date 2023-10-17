@@ -7,7 +7,8 @@ import sys
 
 
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
+                    format="%(asctime)s %(levelname)s %(message)s")
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
 ROOT_PATH = str(os.environ.get("ROOT_PATH"))

@@ -49,3 +49,8 @@ isPointNeed: bool
 lat: float
 lon: float
 point_dist: int
+
+
+в корневой директории
+pwd
+и добавить результат в .env
