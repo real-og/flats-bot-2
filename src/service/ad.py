@@ -56,6 +56,7 @@ class Ad:
 <b>Цена: </b> {self.cost} USD
 <b>Сдаёт: </b>{self.landlord}
 🚇 {self.subway_name}, {self.subway_dist}м
+<b>Источник: </b>{self.source}
 \n<a href="{self.link}">Ссылка</a>"""
         return text
 
