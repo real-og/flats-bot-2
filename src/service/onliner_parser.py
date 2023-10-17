@@ -3,6 +3,7 @@ import logging
 import time
 from ad import Ad
 from src.shared.subway_map import get_closest_subway
+from src.shared.logic import get_city_by_cords
 from collections import deque
 
 
@@ -36,7 +37,7 @@ def init_used_ids_onliner():
 
 
 def generate_ad_from_onliner(onliner_ad: dict):
-    town = onliner_ad.get('location', dict()).get('address')
+    
     photos = []
     if onliner_ad.get('photo'):
         photos.append(onliner_ad.get('photo'))
@@ -48,6 +49,7 @@ def generate_ad_from_onliner(onliner_ad: dict):
         landlord = 'Агентство'
     lat = onliner_ad.get('location', dict()).get('latitude')
     lon = onliner_ad.get('location', dict()).get('longitude')
+    town = get_city_by_cords(lat, lon)
     
     rooms_amount = onliner_ad.get('rent_type')
     if rooms_amount == 'room':

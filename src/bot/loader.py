@@ -6,7 +6,6 @@ import os
 import sys
 
 
-
 logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
                     format="%(asctime)s %(levelname)s %(message)s")
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))

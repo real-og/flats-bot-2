@@ -1,6 +1,7 @@
 
 from src.shared.subway_map import subways
 from geopy.distance import geodesic as GD 
+from geopy.geocoders import Nominatim
 
 
 def is_float(num: str) -> bool:
@@ -54,3 +55,12 @@ def is_comparable(params: dict, ad):
         if params['isPointNeed'] and int(GD((ad.latitude, ad.longitude), (params['lat'], params['lon'])).m) > params['point_dist']:
             return False
         return True
+
+def get_city_by_cords(lat, lon):
+    from geopy.geocoders import Nominatim
+    geolocator = Nominatim(user_agent="flats-finding")
+    location = geolocator.reverse(f"{lat}, {lon}", language='ru')
+    if location.raw.get('address', dict()).get('city'):
+        return location.raw.get('address', dict()).get('city')
+    else:
+        return location.raw.get('address', dict()).get('town')
