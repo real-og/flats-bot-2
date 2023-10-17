@@ -7,6 +7,7 @@ from aiogram import types
 from typing import List
 from dataclasses import dataclass
 from src.shared.db import get_active_users
+from src.shared.logic import is_comparable
 from src.bot.loader import bot
 
 @dataclass
@@ -63,18 +64,14 @@ class Ad:
         """sends current ad to all users with suitable filters from postgres"""
 
         active_users = get_active_users()
-
         async def send_telegram_message(user_id, message):
             """try-except for cases where users blocked the bot"""
             try:
                 if len(self.photos) == 0:
-                    print(1)
                     await bot.send_message(chat_id=user_id, text=self.create_telegram_caption(), parse_mode='HTML')
                 elif len(self.photos) == 1:
-                    print(2)
                     await bot.send_photo(user_id, photo=self.photos[0], caption=self.create_telegram_caption(), parse_mode='HTML')
                 else:
-                    print(3)
                     await bot.send_media_group(user_id, media=self.create_telegram_mediagroup(self.create_telegram_caption()))
             except Exception as e:
                 logging.error(e)
@@ -82,8 +79,9 @@ class Ad:
         async def send_messages():
             tasks = []
             for user in active_users:
-                task = asyncio.create_task(send_telegram_message(user['id_tg'], self))
-                tasks.append(task)
+                if is_comparable(user['params'], self):
+                    task = asyncio.create_task(send_telegram_message(user['id_tg'], self))
+                    tasks.append(task)
             await asyncio.gather(*tasks)
             s = await bot.get_session()
             await s.close()

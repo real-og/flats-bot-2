@@ -1,4 +1,4 @@
-from src.service.ad import Ad
+
 from src.shared.subway_map import subways
 from geopy.distance import geodesic as GD 
 
@@ -28,11 +28,11 @@ def is_coordinates(input: str) -> bool:
     return True
 
 
-def is_comparable(params: dict, ad: Ad):
+def is_comparable(params: dict, ad):
         if params['town'] != 'Вся Беларусь' and ad.town != params['town']:
             return False
         
-        if float(ad.cost) > float(params['max_cost']) or float(ad.cost) < float(params['min_cost']):
+        if float(ad.cost) > float(params['maxCost']) or float(ad.cost) < float(params['minCost']):
             return False
         
         if params['landlord'] != 'Не важно' and params['landlord'] != ad.landlord:
