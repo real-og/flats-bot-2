@@ -14,7 +14,7 @@ class Ad:
     landlord: str
     latitude: float
     longitude: float
-    rooms_amount: float
+    rooms_amount: int
     link: str
     source: str
     subway_name: str

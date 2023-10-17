@@ -1,4 +1,5 @@
 from src.service.ad import Ad
+from src.shared.subway_map import subways
 from geopy.distance import geodesic as GD 
 
 
@@ -28,17 +29,28 @@ def is_coordinates(input: str) -> bool:
 
 
 def is_comparable(params: dict, ad: Ad):
-        if ad.town != params['town']:
+        if params['town'] != 'Вся Беларусь' and ad.town != params['town']:
             return False
+        
         if float(ad.cost) > float(params['max_cost']) or float(ad.cost) < float(params['min_cost']):
             return False
-        if params['landlord'] != 'Не важно' and params['landlord'] != ad.owner:
+        
+        if params['landlord'] != 'Не важно' and params['landlord'] != ad.landlord:
             return False
-        formated_rooms = 'Комната' if ad.rooms_amount == 0 else str(ad.rooms)
+        
+        formated_rooms = 'Комната' if ad.rooms_amount == 0 else str(ad.rooms_amount)
         if formated_rooms not in params['rooms']:
             return False
-        if params['isSubwayNeed'] and int(params['subway_dist']) < ad.subway_dist:
-            return False
+        
+        if params['isSubwayNeed']:
+            is_comparable_by_subway = False
+            for subway_index in params['subways']:
+                if subways[int(subway_index)].distance_to(ad.latitude, ad.longitude) <= params['subway_dist']:
+                    is_comparable_by_subway = True
+                    break
+            if not is_comparable_by_subway:
+                return False
+        
         if params['isPointNeed'] and int(GD((ad.latitude, ad.longitude), (params['lat'], params['lon'])).m) > params['point_dist']:
             return False
         return True
