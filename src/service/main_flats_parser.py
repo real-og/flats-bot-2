@@ -10,7 +10,7 @@ from onliner_parser import poll_onliner
 from kufar_rooms_parser import poll_kufar_rooms
 
 
-logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
+logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='a',
                     format="%(asctime)s %(levelname)s %(message)s")
 
 if __name__ == "__main__":

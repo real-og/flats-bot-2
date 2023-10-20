@@ -6,7 +6,7 @@ import os
 import sys
 
 
-logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='w',
+logging.basicConfig(level=logging.INFO, filename="src/service/errors.log", filemode='a',
                     format="%(asctime)s %(levelname)s %(message)s")
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
