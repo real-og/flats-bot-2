@@ -10,4 +10,5 @@ test.jpg
 test2.jpg
 src/service/errors.log
 src/service/ads.csv
+src/analytics/users.csv
 test.txt

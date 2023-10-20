@@ -28,7 +28,7 @@ async def confirm(message: types.Message):
                     state=State.broadcast,
                     content_types=['any'])
 async def confirm(message: types.Message):
-    id_rows = db.get_all_users()
+    id_rows = db.get_all_users_ids()
     for id_row in id_rows:
         id = id_row['id_tg']
         try:

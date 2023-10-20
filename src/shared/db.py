@@ -131,9 +131,15 @@ def get_active_users() -> List[psycopg2.extras.RealDictRow]:
         return curs.fetchall()
     
 
-def get_all_users() -> List[psycopg2.extras.RealDictRow]:
+def get_all_users_ids() -> List[psycopg2.extras.RealDictRow]:
     with Database() as curs:
         _SQL = "SELECT id_tg FROM users;"
+        curs.execute(_SQL)
+        return curs.fetchall()
+    
+def get_all_users() -> List[psycopg2.extras.RealDictRow]:
+    with Database() as curs:
+        _SQL = "SELECT * FROM users order by jointime;"
         curs.execute(_SQL)
         return curs.fetchall()
     
