@@ -129,6 +129,15 @@ def get_active_users() -> List[psycopg2.extras.RealDictRow]:
         _SQL = "SELECT id_tg, params FROM users WHERE isActive;"
         curs.execute(_SQL)
         return curs.fetchall()
+    
+
+def get_all_users() -> List[psycopg2.extras.RealDictRow]:
+    with Database() as curs:
+        _SQL = "SELECT id_tg FROM users;"
+        curs.execute(_SQL)
+        return curs.fetchall()
+    
+
 
 def set_user_status(id_tg: int, is_active: bool):
     with Database() as curs:

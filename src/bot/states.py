@@ -15,3 +15,4 @@ class State(StatesGroup):
     select_branch = State()
     distance = State()
     pause = State()
+    broadcast = State()
