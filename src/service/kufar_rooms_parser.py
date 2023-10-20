@@ -14,7 +14,7 @@ kufar_params_rooms = {'cat': '1040',
                 'cur': 'BYR',
                 'gtsy': 'country-belarus',
                 'lang': 'ru',
-                'rnt': '1',
+                'rnl': '3',
                 'size': '30',
                 'typ': 'let'}
 
