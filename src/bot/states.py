@@ -5,6 +5,7 @@ class State(StatesGroup):
     confirm_town = State()
     choose_cost = State()
     choose_rooms = State()
+    choose_sources = State()
     choose_landlord = State()
     is_subway_needed = State()
     is_point_needed = State()
