@@ -1,60 +1,23 @@
 # flats-bot-2
-Bot collecting flats&rooms renting ads from various sources in Belarus
+Bot collecting flats&rooms renting ads from various sources in Belarus and sendind them to user via telegram
 
-postgres
+## Find it in telegram [here](https://t.me/flats_minsk_bot)
+or simply by username @flats_minsk_bot
 
-Общее
+## Sources available now
 
-Сервис парсинга объявлений о сдаче квартир и комнат с разных ресурсов Беларуси. 
-Взаимодействие через бота в телеграм @flats_minsk_bot
-Выбираешь нужные параметры и ждешь. Как только кто-то выложит объявление, оно придет к тебе.
-В данной версии доступен выбор
--города
--цены
--количества комнат
--расстояние до метро (для минска)
--собственник или агентство
--район по точке на карте и радиусу
+- Onliner
+- Kufar
 
+But anyone may contribute and expand this list
 
-Структура
+## Documentation
 
-Информация о пользователях и их параметры хранятся в postgresql, схема которой в schema.qsl
-requirements.txt - нужные библиотеки
-.env.example - пример файла с чувствительными данными, который должен быть создан в корневой директории проекта  (.env)
-src - исходный код на языке python
+For more technical information check [docs](https://t.me/flats_minsk_bot)
 
+## Support
 
-Код
-В src находятся папки
-bot - telegram bot - для выбора параметров поиска
-service - полинг сервисов и отправка сообщений
-shared - общие модули для бота и сервиса поллинга
+If you have any ideas, wishes, questions, offers or gratitude, you may reach me here
 
-
-Не стесняйтесь писать с любыми вопросами, предложениями и замечаниями
-
-
-В базе данных фильтры пользователя хранятся в JSON params, где
-
-minCost: int
-maxCost: int
-town: str - [любое значение - тогда проверка по точному совпадению либо "Вся Беларусь"]
-landlord: str ['Не важно', 'Агентсво', 'Собственник']
-rooms: array[str], значения могут быть ['1', '2', '3', '4', 'Комната']
-isSubwayNeed: bool
-subways: array[str], ['0' ... '32']
-subway_dist: int (9999999 при неважно)
-isPointNeed: bool
-lat: float
-lon: float
-point_dist: int
-
-
-в корневой директории
-pwd
-и добавить результат в .env
-
-работает в редис 2
-
-скоро будет нормальный ридми. обещаю
+- [telegram](https://t.me/bot_dealla)
+- [email](grakovich-e@yandex.by)
