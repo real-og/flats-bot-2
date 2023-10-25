@@ -11,12 +11,12 @@ regular_timeout = 10
 
 kufar_url_rooms = "https://api.kufar.by/search-api/v1/search/rendered-paginated"
 kufar_params_rooms = {'cat': '1040',
-                'cur': 'BYR',
-                'gtsy': 'country-belarus',
-                'lang': 'ru',
-                'rnl': '3',
-                'size': '30',
-                'typ': 'let'}
+                      'cur': 'BYR',
+                      'gtsy': 'country-belarus',
+                      'lang': 'ru',
+                      'rnl': '3',
+                      'size': '30',
+                      'typ': 'let'}
 
 
 def init_used_ids_kufar_rooms():
@@ -24,7 +24,7 @@ def init_used_ids_kufar_rooms():
     response = requests.get(kufar_url_rooms, kufar_params_rooms)
     try:
         kufar_rooms_ads = response.json().get('ads', [])
-    except:
+    except Exception:
         kufar_rooms_ads = []
         logging.error(f"Не удалось получить словарь при инициализации КУФАРА комнат\n{response[:100]}")
     if len(kufar_rooms_ads) == 0:
@@ -43,7 +43,7 @@ def generate_ad_from_kufar(kufar_ad: dict):
     lat = None
     lon = None
     for param in ad_params:
-        if param.get('pl') == 'Область' and  param.get('vl') == 'Минск':
+        if param.get('pl') == 'Область' and param.get('vl') == 'Минск':
             town = 'Минск'
         if param.get('pl') == 'Город / Район' and (town != 'Минск'):
             town = param.get('vl')
@@ -63,10 +63,10 @@ def generate_ad_from_kufar(kufar_ad: dict):
     cost = str(kufar_ad.get('price_usd'))
     if cost and '.' not in cost:
         cost = f"{cost[:-2]}.{cost[-2:]}"
-    
-    if kufar_ad.get('company_ad') == True:
+
+    if kufar_ad.get('company_ad') is True:
         landlord = 'Агентство'
-    elif kufar_ad.get('company_ad') == False:
+    elif kufar_ad.get('company_ad') is False:
         landlord = 'Собственник'
     else:
         landlord = None
@@ -76,7 +76,7 @@ def generate_ad_from_kufar(kufar_ad: dict):
         image_urls.append(f"https://rms4.kufar.by/v1/gallery/{img['path']}")
 
     return Ad(town, image_urls, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist)
-    
+
 
 def poll_kufar_rooms():
 
@@ -115,9 +115,8 @@ def poll_kufar_rooms():
                     ad.save()
                     ad.broadcast()
 
-        except:
+        except Exception:
             logging.exception(f'КУФАР rooms попытка взять JSON ответа\n{response}')
 
         finally:
             time.sleep(regular_timeout)
-

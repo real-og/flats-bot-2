@@ -1,6 +1,5 @@
 from loader import dp, bot
 from aiogram import types
-from texts import buttons
 from texts import answers
 from states import State
 import keyboards as kb

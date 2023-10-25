@@ -1,10 +1,11 @@
-from aiogram.types import ReplyKeyboardRemove, \
+from aiogram.types import \
     ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton
 
 from src.shared.subway_map import subways
 from src.shared.db import get_user_params
-from typing import List, Literal
+from typing import Literal
+
 
 def generate_rooms_kb(id_tg: int) -> InlineKeyboardMarkup:
     inline_kb1 = InlineKeyboardMarkup(row_width=4)
@@ -23,16 +24,17 @@ def generate_sub_kb(id_tg: int) -> InlineKeyboardMarkup:
     subs = get_user_params(id_tg)['subways']
     for i in range(0, 15):
         inline_kb.add(InlineKeyboardButton(('✅' if str(i) in subs else '❌') + subways[i].name, callback_data=str(i)),
-                       InlineKeyboardButton(('✅' if str(i + 15) in subs else '❌') + subways[i + 15].name, callback_data=str(i + 15)))
+                      InlineKeyboardButton(('✅' if str(i + 15) in subs else '❌') + subways[i + 15].name, callback_data=str(i + 15)))
     for i in range(30, 33):
         inline_kb.add(InlineKeyboardButton(('✅' if str(i) in subs else '❌') + subways[i].name, callback_data=i))
     inline_kb.add(InlineKeyboardButton('⬆️Продолжить⬆️', callback_data='go'))
     return inline_kb
 
+
 # not really need it
 def generate_new_kb(call: InlineKeyboardMarkup,
                     num: Literal['01', '02', '03', '04', '10'],
-                    size: int)-> InlineKeyboardMarkup:
+                    size: int) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(row_width=size)
     target = call[int(num[0])][int(num[1]) - 1]
     if '❌' in target.text:
@@ -43,6 +45,7 @@ def generate_new_kb(call: InlineKeyboardMarkup,
         for item in row:
             keyboard.insert(item)
     return keyboard.add(call[-1][-1])
+
 
 def generate_chosen_rooms_kb(id_tg: int) -> InlineKeyboardMarkup:
     inline_kb = InlineKeyboardMarkup(row_width=4)
@@ -55,12 +58,13 @@ def generate_chosen_rooms_kb(id_tg: int) -> InlineKeyboardMarkup:
     inline_btn_6 = InlineKeyboardButton('⬆️Продолжить⬆️', callback_data='go')
     return inline_kb.add(inline_btn_1, inline_btn_2, inline_btn_3, inline_btn_4, inline_btn_5).row(inline_btn_6)
 
+
 def generate_subway_chosen_kb(id_tg: int) -> InlineKeyboardMarkup:
     inline_kb = InlineKeyboardMarkup(row_width=2)
     subs = get_user_params(id_tg)['subways']
     for i in range(0, 15):
         inline_kb.add(InlineKeyboardButton(('✅' if str(i) in subs else '❌') + subways[i].name, callback_data=str(i)),
-                       InlineKeyboardButton(('✅' if str(i + 15) in subs else '❌') + subways[i + 15].name, callback_data=str(i + 15)))
+                      InlineKeyboardButton(('✅' if str(i + 15) in subs else '❌') + subways[i + 15].name, callback_data=str(i + 15)))
     for i in range(30, 33):
         inline_kb.add(InlineKeyboardButton(('✅' if str(i) in subs else '❌') + subways[i].name, callback_data=i))
     inline_kb.add(InlineKeyboardButton('⬆️Продолжить⬆️', callback_data='go'))

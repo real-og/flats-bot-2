@@ -1,6 +1,5 @@
 from loader import dp
 from aiogram import types
-from aiogram.dispatcher import FSMContext
 from texts import answers
 from states import State
 from src.shared import db

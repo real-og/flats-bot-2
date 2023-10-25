@@ -48,4 +48,3 @@ async def select_radius(message: types.Message):
         db.set_point_radius(message.from_id, int(message.text))
     else:
         await message.answer(answers.bad_distance)
-        

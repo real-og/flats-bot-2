@@ -19,6 +19,7 @@ async def choose_town(message: types.Message):
         await message.answer(answers.no_town_supported, reply_markup=kb.continue_kb)
         await State.confirm_town.set()
 
+
 @dp.message_handler(state=State.confirm_town)
 async def confirm_town(message: types.Message):
     input = message.text.strip().title()

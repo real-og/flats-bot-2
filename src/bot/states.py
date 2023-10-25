@@ -1,5 +1,6 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
+
 class State(StatesGroup):
     choose_town = State()
     confirm_town = State()

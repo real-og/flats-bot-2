@@ -8,7 +8,7 @@ from src.shared import db
 
 
 @dp.message_handler(state=State.sending)
-async def subway_distance(message: types.Message):
+async def handle_menu(message: types.Message):
     input = message.text.strip().title()
     if input == buttons.pause_btn:
         await message.answer(answers.paused, reply_markup=kb.restart_kb)
@@ -34,6 +34,7 @@ async def subway_distance(message: types.Message):
         await State.sending.set()
     else:
         await message.answer(answers.bad_input_menu, reply_markup=kb.restart_kb)
+
 
 @dp.message_handler()
 async def default_handler(message: types.Message):

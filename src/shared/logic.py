@@ -33,10 +33,12 @@ def is_comparable(params: dict, ad):
     if params['town'] != 'Вся Беларусь' and ad.town != params['town']:
         return False
 
-    if float(ad.cost) > float(params['maxCost']) or float(ad.cost) < float(params['minCost']):
+    if float(ad.cost) > float(params['maxCost']) \
+            or float(ad.cost) < float(params['minCost']):
         return False
 
-    if params['landlord'] != 'Не важно' and params['landlord'] != ad.landlord:
+    if params['landlord'] != 'Не важно' \
+            and params['landlord'] != ad.landlord:
         return False
 
     formated_rooms = 'Комната' if ad.rooms_amount == 0 else str(ad.rooms_amount)
@@ -52,7 +54,8 @@ def is_comparable(params: dict, ad):
         if not is_comparable_by_subway:
             return False
 
-    if params['isPointNeed'] and int(GD((ad.latitude, ad.longitude), (params['lat'], params['lon'])).m) > params['point_dist']:
+    if params['isPointNeed'] \
+            and int(GD((ad.latitude, ad.longitude), (params['lat'], params['lon'])).m) > params['point_dist']:
         return False
     return True
 
@@ -65,4 +68,3 @@ def get_city_by_cords(lat, lon):
         return location.raw.get('address', dict()).get('city')
     else:
         return location.raw.get('address', dict()).get('town')
-    

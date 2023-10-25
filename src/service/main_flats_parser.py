@@ -2,7 +2,6 @@ import sys
 import os
 ROOT_PATH = str(os.environ.get("ROOT_PATH"))
 sys.path.append(ROOT_PATH)
-
 import threading
 import logging
 from kufar_parser import poll_kufar
@@ -10,7 +9,8 @@ from onliner_parser import poll_onliner
 from kufar_rooms_parser import poll_kufar_rooms
 
 
-logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log", filemode='a',
+logging.basicConfig(level=logging.WARNING, filename="src/service/errors.log",
+                    filemode='a',
                     format="%(asctime)s %(levelname)s %(message)s")
 
 if __name__ == "__main__":

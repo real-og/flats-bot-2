@@ -8,4 +8,3 @@ from . import menu
 from . import rooms
 from . import subway
 from . import town
-

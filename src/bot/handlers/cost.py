@@ -17,7 +17,8 @@ async def choose_cost(message: types.Message):
         max_cost = int(costs[1])
         if min_cost <= max_cost:
             await message.answer(answers.cost_chosen(min_cost, max_cost))
-            await message.answer(answers.enter_rooms, reply_markup=kb.generate_rooms_kb(message.from_id))
+            await message.answer(answers.enter_rooms,
+                                 reply_markup=kb.generate_rooms_kb(message.from_id))
             await State.choose_rooms.set()
             db.edit_cost(message.from_id, min_cost, max_cost)
         else:

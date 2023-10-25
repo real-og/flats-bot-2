@@ -27,7 +27,7 @@ async def select_branch(callback: types.CallbackQuery):
     if callback.data == 'go':
         await callback.message.answer(answers.enter_distance_subway, reply_markup=kb.dist_kb)
         await State.distance.set()   
-    else: 
+    else:
         db.flag_subway(callback.from_user.id, callback.data)
         await callback.message.edit_reply_markup(kb.generate_sub_kb(callback.from_user.id))
     await bot.answer_callback_query(callback.id)
@@ -42,4 +42,3 @@ async def subway_distance(message: types.Message):
         await State.is_point_needed.set()
     else:
         await message.answer(answers.bad_distance, reply_markup=kb.dist_kb)
-        

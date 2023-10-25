@@ -14,8 +14,8 @@ def cost_chosen(min_cost, max_cost):
 
 def compose_params(id: int) -> str:
     params = db.get_user_params(id)
-    
-    text =f"""город: <b>{params['town']}</b>
+
+    text = f"""город: <b>{params['town']}</b>
 цена: <b>{params['minCost']}$ - {params['maxCost']}$</b>
 от: <b>{params['landlord']}</b>
 комнат: <b>{', '.join(params['rooms'])}</b>\n"""
@@ -87,4 +87,3 @@ bad_input_universal = 'Что-то не понял. Попробуй /start'
 
 enter_message_to_broadcast = "Вводи сообщение для рассылки или /quit"
 quited_broadcast = 'Рассылка отменена, ты в состоянии sending. Введи все фильтры заново, если не приходят объявления'
-

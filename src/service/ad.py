@@ -1,7 +1,6 @@
 import datetime
 import csv
 import asyncio
-import json
 import logging
 from aiogram import types
 from typing import List
@@ -9,6 +8,7 @@ from dataclasses import dataclass
 from src.shared.db import get_active_users
 from src.shared.logic import is_comparable
 from src.bot.loader import bot
+
 
 @dataclass
 class Ad:
@@ -41,14 +41,12 @@ class Ad:
             writer = csv.writer(file)
             writer.writerow(data_to_write)
 
-
     def create_telegram_mediagroup(self, caption):
         media = types.MediaGroup()
         media.attach_photo(self.photos[0], caption, parse_mode='HTML')    
         for photo_url in self.photos[1:]:
             media.attach_photo(photo_url)
         return media
-    
 
     def create_telegram_caption(self):
         text = f"""<b>Комнат: </b> {self.rooms_amount}
@@ -60,20 +58,25 @@ class Ad:
 \n<a href="{self.link}">Ссылка</a>"""
         return text
 
-
     def broadcast(self):
         """sends current ad to all users with suitable filters from postgres"""
 
         active_users = get_active_users()
+
         async def send_telegram_message(user_id, message):
             """try-except for cases where users blocked the bot"""
             try:
                 if len(self.photos) == 0:
-                    await bot.send_message(chat_id=user_id, text=self.create_telegram_caption(), parse_mode='HTML')
+                    await bot.send_message(chat_id=user_id,
+                                           text=self.create_telegram_caption(),
+                                           parse_mode='HTML')
                 elif len(self.photos) == 1:
-                    await bot.send_photo(user_id, photo=self.photos[0], caption=self.create_telegram_caption(), parse_mode='HTML')
+                    await bot.send_photo(user_id, photo=self.photos[0],
+                                         caption=self.create_telegram_caption(),
+                                         parse_mode='HTML')
                 else:
-                    await bot.send_media_group(user_id, media=self.create_telegram_mediagroup(self.create_telegram_caption()))
+                    await bot.send_media_group(user_id,
+                                               media=self.create_telegram_mediagroup(self.create_telegram_caption()))
             except Exception as e:
                 logging.error(e)
 
@@ -86,6 +89,5 @@ class Ad:
             await asyncio.gather(*tasks)
             s = await bot.get_session()
             await s.close()
-        
-        asyncio.run(send_messages())
 
+        asyncio.run(send_messages())

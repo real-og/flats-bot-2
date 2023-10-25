@@ -1,13 +1,15 @@
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+# from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 import logging
 import os
 import sys
 
 
-logging.basicConfig(level=logging.INFO, filename="src/service/errors.log", filemode='a',
+logging.basicConfig(level=logging.INFO, filename="src/service/errors.log",
+                    filemode='a',
                     format="%(asctime)s %(levelname)s %(message)s")
+
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
 ROOT_PATH = str(os.environ.get("ROOT_PATH"))
