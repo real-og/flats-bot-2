@@ -3,7 +3,6 @@ import sys
 import os
 ROOT_PATH = str(os.environ.get("ROOT_PATH"))
 sys.path.append(ROOT_PATH)
-
 from src.shared import db
 
 
