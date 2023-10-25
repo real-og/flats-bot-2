@@ -12,3 +12,4 @@ src/service/errors.log
 src/service/ads.csv
 src/analytics/users.csv
 test.txt
+test.json
