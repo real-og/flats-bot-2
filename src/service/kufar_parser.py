@@ -77,7 +77,16 @@ def generate_ad_from_kufar(kufar_ad: dict):
     for img in kufar_ad['images'][:9]:
         image_urls.append(f"https://rms4.kufar.by/v1/gallery/{img['path']}")
 
-    return Ad(town, image_urls, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist)
+    author_name = 'Не указано'
+    account_params = kufar_ad.get('account_parameters', [])
+    for param in account_params:
+        if param.get('contact_person'):
+            author_name = param.get('v')
+        if param.get('p') == 'name':
+            author_name = param.get('v')
+
+
+    return Ad(town, image_urls, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist, author_name)
 
 
 def poll_kufar():

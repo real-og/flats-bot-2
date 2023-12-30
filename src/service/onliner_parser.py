@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 import logging
 import time
 from ad import Ad
@@ -66,7 +67,18 @@ def generate_ad_from_onliner(onliner_ad: dict):
         subway_dist = subway.distance_to(lat, lon)
         subway_name = subway.name
 
-    return Ad(town, photos, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist)
+    author_name = 'Не найдено'
+    try:
+        response_to_find_name = requests.get(link)
+        soup = BeautifulSoup(response_to_find_name.text, 'html.parser')
+
+        author_block = soup.find('div', class_='apartment-info__sub-line apartment-info__sub-line_extended')
+        author_name = author_block.text.strip()
+    except:
+        logging.error("ОЛАЙНЕР ошибка при попытке достать имя")
+
+
+    return Ad(town, photos, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist, author_name)
 
 
 def poll_onliner():

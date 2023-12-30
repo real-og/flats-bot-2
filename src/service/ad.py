@@ -23,6 +23,7 @@ class Ad:
     source: str
     subway_name: str
     subway_dist: int
+    author_name: str
 
     def save(self):
         data_to_write = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -35,7 +36,8 @@ class Ad:
                          self.rooms_amount,
                          self.link,
                          self.subway_name,
-                         self.subway_dist
+                         self.subway_dist,
+                         self.author_name
                          ]
         with open('src/service/ads.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -55,7 +57,8 @@ class Ad:
 <b>Сдаёт: </b>{self.landlord}
 🚇 {self.subway_name}, {self.subway_dist}м
 <b>Источник: </b>{self.source}
-\n<a href="{self.link}">Ссылка</a>"""
+\n<a href="{self.link}">Ссылка</a>
+<b>Автор: </b> {self.author_name}"""
         return text
 
     def broadcast(self):
