@@ -13,3 +13,4 @@ src/service/ads.csv
 src/analytics/users.csv
 test.txt
 test.json
+.pytest_cache
