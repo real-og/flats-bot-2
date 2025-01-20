@@ -1,13 +1,85 @@
 import datetime
 import csv
 import asyncio
+import traceback
 import logging
+import requests
+import time
 from aiogram import types
 from typing import List
 from dataclasses import dataclass
 from src.shared.db import get_active_users
 from src.shared.logic import is_comparable
-from src.bot.loader import bot
+import os
+
+BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
+
+
+def send_telegram_message(token, chat_id, message):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    params = {
+        'chat_id': chat_id,
+        'text': message,
+        'parse_mode': 'HTML'
+    }
+    try:
+        response = requests.post(url, params=params)
+        response.raise_for_status() 
+
+    except requests.exceptions.HTTPError as e:
+
+        if e.response and e.response.status_code == 429:
+            time.sleep(0.5)  
+            send_telegram_message(token, chat_id, message)  
+        else:
+            logging.error('отправка в тг', exc_info=True)
+
+
+def send_telegram_photo(token, chat_id, photo_url, caption=None):
+    url = f"https://api.telegram.org/bot{token}/sendPhoto"
+    params = {
+        'chat_id': chat_id,
+        'photo': photo_url,
+        'parse_mode': 'HTML'
+    }
+    if caption:
+        params['caption'] = caption  
+    try:
+        response = requests.post(url, params=params)
+        response.raise_for_status()  
+    except requests.exceptions.HTTPError as e:
+        if e.response and e.response.status_code == 429:
+            time.sleep(0.5)  
+            send_telegram_photo(token, chat_id, photo_url, caption)  
+        else:
+            logging.error('отправка в тг', exc_info=True)
+
+
+def send_telegram_media_group(token, chat_id, media_files, caption=None):
+    url = f"https://api.telegram.org/bot{token}/sendMediaGroup"
+    media = []
+    for file_url in media_files:
+        media_item = {'type': 'photo', 'media': file_url}
+        if not media:
+            media_item['caption'] = caption
+            media_item['parse_mode'] = 'HTML'
+        media.append(media_item)
+    params = {
+        'chat_id': chat_id,
+        'media': media,
+        'parse_mode': 'HTML'
+    }
+    try:
+        response = requests.post(url, json=params)
+        response.raise_for_status() 
+    except requests.exceptions.HTTPError as e:
+        if e.response and e.response.status_code == 429:
+            time.sleep(0.5)  
+            send_telegram_media_group(token, chat_id, media_files, caption)  
+        else:
+            logging.error('отправка в тг', exc_info=True)
+
+
 
 
 @dataclass
@@ -65,32 +137,19 @@ class Ad:
         """sends current ad to all users with suitable filters from postgres"""
 
         active_users = get_active_users()
+        text = self.create_telegram_caption()
+        photos = self.photos
 
-        async def send_telegram_message(user_id, message):
-            """try-except for cases where users blocked the bot"""
-            try:
-                if len(self.photos) == 0:
-                    await bot.send_message(chat_id=user_id,
-                                           text=self.create_telegram_caption(),
-                                           parse_mode='HTML')
-                elif len(self.photos) == 1:
-                    await bot.send_photo(user_id, photo=self.photos[0],
-                                         caption=self.create_telegram_caption(),
-                                         parse_mode='HTML')
-                else:
-                    await bot.send_media_group(user_id,
-                                               media=self.create_telegram_mediagroup(self.create_telegram_caption()))
-            except Exception as e:
-                logging.error(e)
+        for user in active_users:
+            if is_comparable(user['params'], self):
+                user_id = user['id_tg']
 
-        async def send_messages():
-            tasks = []
-            for user in active_users:
-                if is_comparable(user['params'], self):
-                    task = asyncio.create_task(send_telegram_message(user['id_tg'], self))
-                    tasks.append(task)
-            await asyncio.gather(*tasks)
-            s = await bot.get_session()
-            await s.close()
+                if len(photos) == 0:
+                    send_telegram_message(BOT_TOKEN, user_id, text)
+                elif len(photos) == 1:
+                    send_telegram_photo(BOT_TOKEN, user_id, photos[0], text)
+                elif len(photos) > 1:
+                    send_telegram_media_group(BOT_TOKEN, user_id, photos, text)
 
-        asyncio.run(send_messages())
+
+        

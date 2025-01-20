@@ -7,7 +7,6 @@ from src.shared import db
 
 
 def write_users_csv():
-    print('start wr')
     users = db.get_all_users()
     data_to_write = []
     for user in users:
@@ -23,7 +22,6 @@ def write_users_csv():
             user['params']['isPointNeed'],
             user['params']['landlord'],
         ])
-    print('data complete')
     with open('src/analytics/users.csv', mode='w', newline='') as file:
         writer = csv.writer(file, delimiter=',')
         writer.writerow(['date',
@@ -38,4 +36,4 @@ def write_users_csv():
                          'landlord'])
         for row in data_to_write:
             writer.writerow(row)
-    print('writed')
+
