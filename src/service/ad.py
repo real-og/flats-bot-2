@@ -26,13 +26,15 @@ def send_telegram_message(token, chat_id, message):
         response = requests.post(url, params=params)
         response.raise_for_status() 
 
-    except requests.exceptions.HTTPError as e:
-
-        if e.response and e.response.status_code == 429:
-            time.sleep(0.5)  
-            send_telegram_message(token, chat_id, message)  
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 429:
+            retry_after = 1 
+            time.sleep(retry_after)  
+            send_telegram_message(token, chat_id, message)
         else:
-            logging.error('отправка в тг', exc_info=True)
+            logging.error('ошибка тг бродкаст', exc_info=True)
+    except Exception as err:
+        logging.error('необычная ошибка тг бродкаст', exc_info=True)
 
 
 def send_telegram_photo(token, chat_id, photo_url, caption=None):
@@ -47,12 +49,15 @@ def send_telegram_photo(token, chat_id, photo_url, caption=None):
     try:
         response = requests.post(url, params=params)
         response.raise_for_status()  
-    except requests.exceptions.HTTPError as e:
-        if e.response and e.response.status_code == 429:
-            time.sleep(0.5)  
-            send_telegram_photo(token, chat_id, photo_url, caption)  
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 429:
+            retry_after = 1 
+            time.sleep(retry_after)  
+            send_telegram_photo(token, chat_id, photo_url, caption=None)
         else:
-            logging.error('отправка в тг', exc_info=True)
+            logging.error('ошибка тг бродкаст', exc_info=True)
+    except Exception as err:
+        logging.error('необычная ошибка тг бродкаст', exc_info=True)
 
 
 def send_telegram_media_group(token, chat_id, media_files, caption=None):
@@ -72,12 +77,15 @@ def send_telegram_media_group(token, chat_id, media_files, caption=None):
     try:
         response = requests.post(url, json=params)
         response.raise_for_status() 
-    except requests.exceptions.HTTPError as e:
-        if e.response and e.response.status_code == 429:
-            time.sleep(0.5)  
-            send_telegram_media_group(token, chat_id, media_files, caption)  
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 429:
+            retry_after = 1 
+            time.sleep(retry_after)  
+            send_telegram_media_group(token, chat_id, media_files, caption=None)
         else:
-            logging.error('отправка в тг', exc_info=True)
+            logging.error('ошибка тг бродкаст', exc_info=True)
+    except Exception as err:
+        logging.error('необычная ошибка тг бродкаст', exc_info=True)
 
 
 
