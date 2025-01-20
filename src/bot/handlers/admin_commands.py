@@ -20,7 +20,7 @@ async def send_errors(message: types.Message, state: FSMContext):
 
 @dp.message_handler(filters.IDFilter(chat_id=[ADMIN_ID]), commands=["get_users"], state="*", )
 async def send_users(message: types.Message, state: FSMContext):
-
+    print('f')
     with open('src/analytics/users.csv', 'rb') as file:
         write_users_csv()
         await message.answer_document(file, caption='Отчет пользователей')

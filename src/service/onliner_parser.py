@@ -82,7 +82,8 @@ def generate_ad_from_onliner(onliner_ad: dict):
 
 
 def poll_onliner():
-    onliner_used_ids = deque(init_used_ids_onliner())
+    # onliner_used_ids = deque(init_used_ids_onliner())
+    onliner_used_ids = deque()
 
     while True:
         try:
