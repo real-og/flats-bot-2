@@ -91,8 +91,8 @@ def generate_ad_from_kufar(kufar_ad: dict):
 
 def poll_kufar():
 
-    # kufar_used_ids = deque(init_used_ids_kufar())
-    kufar_used_ids = deque()
+    kufar_used_ids = deque(init_used_ids_kufar())
+    # kufar_used_ids = deque()
 
     while True:
         kufar_params['size'] = 15
