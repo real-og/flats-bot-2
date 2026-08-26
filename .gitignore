@@ -1,6 +1,8 @@
 Pipfile
 Pipfile.lock
 .env
+.env.local
+.env.prod
 test.py
 __pycache__
 key.json
@@ -14,3 +16,4 @@ src/analytics/users.csv
 test.txt
 test.json
 .pytest_cache
+readme_private.txt

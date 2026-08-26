@@ -158,6 +158,7 @@ class Ad:
                     send_telegram_photo(BOT_TOKEN, user_id, photos[0], text)
                 elif len(photos) > 1:
                     send_telegram_media_group(BOT_TOKEN, user_id, photos, text)
+                time.sleep(0.5) 
 
 
         

@@ -9,14 +9,14 @@ from collections import deque
 error_timeout = 15
 regular_timeout = 10
 
-kufar_url = "https://api.kufar.by/search-api/v1/search/rendered-paginated"
+kufar_url = "https://api.kufar.by/search-api/v2/search/rendered-paginated"
 kufar_params = {'cat': '1010',
                 'cur': 'BYR',
                 'gtsy': 'country-belarus',
                 'lang': 'ru',
-                'rnt': '1',
                 'size': '30',
-                'typ': 'let'}
+                'typ': 'let',
+                'sort': 'lst.d'}
 
 
 def init_used_ids_kufar():
@@ -43,6 +43,8 @@ def generate_ad_from_kufar(kufar_ad: dict):
     lat = None
     lon = None
     for param in ad_params:
+        if param.get('pl') == 'Регион' and param.get('vl') == 'Минск':
+            town = 'Минск'
         if param.get('pl') == 'Область' and param.get('vl') == 'Минск':
             town = 'Минск'
         if param.get('pl') == 'Город / Район' and (town != 'Минск'):
@@ -91,10 +93,11 @@ def generate_ad_from_kufar(kufar_ad: dict):
 
 def poll_kufar():
 
-    kufar_used_ids = deque(init_used_ids_kufar())
-    # kufar_used_ids = deque()
+    # kufar_used_ids = deque(init_used_ids_kufar())
+    kufar_used_ids = deque()
 
     while True:
+
         kufar_params['size'] = 15
         try:
             response = requests.get(kufar_url, kufar_params)
@@ -109,6 +112,7 @@ def poll_kufar():
             continue
         try:
             kufar_ads = response.json().get('ads')
+            
 
             if kufar_ads is None or len(kufar_ads) == 0:
                 logging.warning(f'КУФАР не вернул объявления:\n{kufar_ads[:100]}')
@@ -116,6 +120,7 @@ def poll_kufar():
 
             for kufar_ad in kufar_ads:
                 ad_id = kufar_ad.get('ad_id')
+                
 
                 if ad_id is None:
                     logging.warning(f'КУФАР объявление не имеет id:\n{kufar_ad}')

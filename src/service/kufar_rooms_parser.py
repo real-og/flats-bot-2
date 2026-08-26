@@ -9,14 +9,14 @@ from collections import deque
 error_timeout = 15
 regular_timeout = 10
 
-kufar_url_rooms = "https://api.kufar.by/search-api/v1/search/rendered-paginated"
+kufar_url_rooms = "https://api.kufar.by/search-api/v2/search/rendered-paginated"
 kufar_params_rooms = {'cat': '1040',
                       'cur': 'BYR',
                       'gtsy': 'country-belarus',
                       'lang': 'ru',
-                      'rnl': '3',
                       'size': '30',
-                      'typ': 'let'}
+                      'typ': 'let',
+                      'sort': 'lst.d'}
 
 
 def init_used_ids_kufar_rooms():
@@ -43,6 +43,8 @@ def generate_ad_from_kufar(kufar_ad: dict):
     lat = None
     lon = None
     for param in ad_params:
+        if param.get('pl') == 'Регион' and param.get('vl') == 'Минск':
+            town = 'Минск'
         if param.get('pl') == 'Область' and param.get('vl') == 'Минск':
             town = 'Минск'
         if param.get('pl') == 'Город / Район' and (town != 'Минск'):
@@ -88,8 +90,8 @@ def generate_ad_from_kufar(kufar_ad: dict):
 
 def poll_kufar_rooms():
 
-    kufar_used_ids = deque(init_used_ids_kufar_rooms())
-    # kufar_used_ids = deque()
+    # kufar_used_ids = deque(init_used_ids_kufar_rooms())
+    kufar_used_ids = deque()
 
     while True:
         kufar_params_rooms['size'] = 15
