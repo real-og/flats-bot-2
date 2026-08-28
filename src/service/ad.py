@@ -15,6 +15,11 @@ import os
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
 PROXY = str(os.environ.get("PROXY"))
 
+proxies = {
+    "http": PROXY,
+    "https": PROXY,
+}
+
 
 def send_telegram_message(token, chat_id, message):
     url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -24,7 +29,7 @@ def send_telegram_message(token, chat_id, message):
         'parse_mode': 'HTML'
     }
     try:
-        response = requests.post(url, params=params, proxies=PROXY)
+        response = requests.post(url, params=params, proxies=proxies, timeout=15)
         response.raise_for_status() 
 
     except requests.exceptions.HTTPError as http_err:
@@ -48,7 +53,7 @@ def send_telegram_photo(token, chat_id, photo_url, caption=None):
     if caption:
         params['caption'] = caption  
     try:
-        response = requests.post(url, params=params, proxies=PROXY)
+        response = requests.post(url, params=params, proxies=proxies, timeout=15)
         response.raise_for_status()  
     except requests.exceptions.HTTPError as http_err:
         if response.status_code == 429:
@@ -76,7 +81,7 @@ def send_telegram_media_group(token, chat_id, media_files, caption=None):
         'parse_mode': 'HTML'
     }
     try:
-        response = requests.post(url, json=params, proxies=PROXY)
+        response = requests.post(url, json=params, proxies=proxies, timeout=15)
         response.raise_for_status() 
     except requests.exceptions.HTTPError as http_err:
         if response.status_code == 429:
