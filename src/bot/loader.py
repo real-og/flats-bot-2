@@ -13,11 +13,12 @@ logging.basicConfig(level=logging.INFO, filename="src/service/errors.log",
 ADMIN_ID = str(os.environ.get("ADMIN_ID"))
 BOT_TOKEN = str(os.environ.get("BOT_TOKEN"))
 ROOT_PATH = str(os.environ.get("ROOT_PATH"))
+PROXY = str(os.environ.get("PROXY"))
 
 sys.path.append(ROOT_PATH)
 
 storage = RedisStorage2(db=2)
 # storage = MemoryStorage()
 
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML", proxiy=PROXY)
 dp = Dispatcher(bot, storage=storage)
