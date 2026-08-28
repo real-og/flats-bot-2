@@ -20,5 +20,5 @@ sys.path.append(ROOT_PATH)
 storage = RedisStorage2(db=2)
 # storage = MemoryStorage()
 
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML", proxiy=PROXY)
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML", proxy=PROXY)
 dp = Dispatcher(bot, storage=storage)
