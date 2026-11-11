@@ -1,18 +1,31 @@
-from loader import dp, bot
+from aiogram import F
+from aiogram.fsm.context import FSMContext
+import asyncio
+from src.bot.loader import dp, bot
 from aiogram import types
-from texts import answers
-from states import State
-import keyboards as kb
+from src.bot.texts import answers
+from src.bot.states import State
+from src.bot import keyboards as kb
 from src.shared import db
 
 
-@dp.callback_query_handler(state=State.choose_rooms)
-async def select_room(callback: types.CallbackQuery):
-    if callback.data == 'go':
-        await callback.message.answer(answers.enter_landlord, reply_markup=kb.landlord_kb)
-        await State.choose_landlord.set()
-    else:
-        keyboard = callback.message.reply_markup.inline_keyboard
-        await callback.message.edit_reply_markup(kb.generate_new_kb(keyboard, callback.data, 4))
-        db.flag_room(callback.from_user.id, callback.data)
+@dp.callback_query(State.choose_rooms, F.data)
+async def select_room(callback: types.CallbackQuery, state: FSMContext):
+    if callback.data == "go":
+        if not (await asyncio.to_thread(db.get_user_params, callback.from_user.id))[
+            "rooms"
+        ]:
+            await callback.answer("Выберите хотя бы один вариант", show_alert=True)
+            return
+        await callback.message.answer(
+            answers.enter_landlord, reply_markup=kb.landlord_kb
+        )
+        await state.set_state(State.choose_landlord)
+    elif callback.data in ("01", "02", "03", "04", "10"):
+        await asyncio.to_thread(db.flag_room, callback.from_user.id, callback.data)
+        await callback.message.edit_reply_markup(
+            reply_markup=await asyncio.to_thread(
+                kb.generate_rooms_kb, callback.from_user.id
+            )
+        )
     await bot.answer_callback_query(callback.id)

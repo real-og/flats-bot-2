@@ -1,57 +1,44 @@
 # flats-bot-2
 
-Bot for getting flats&rooms renting ads from various sources in Belarus right in time they published. First, you open bot in telegram, then there you fill your custom filters such as
+Telegram-бот для поиска квартир и комнат на Onliner и Kufar в Беларуси.
+Фильтры: город, цена USD, комнаты, собственник/агентство, станции метро,
+расстояние до точки и источники (`/sources`).
 
-- city
+## Запуск и сопровождение
 
-- cost
+- [Подробный аудит кода и логов, 11.11.2026](docs/AUDIT.md)
+- [Установка, обновление, журналы, резервное копирование и восстановление](docs/OPERATIONS.md)
 
-- rooms amount
+Python 3.11+, PostgreSQL и два процесса под systemd. Redis не требуется.
+SQLite из стандартной библиотеки хранит очередь объявлений/доставки,
+состояния диалогов и критические уведомления. PostgreSQL сохраняет существующих пользователей.
 
-- location
+```bash
+python3.11 -m venv .venv
+.venv/bin/python -m pip install -r requirements.lock
+# Заполнить .env по .env.example; экспортировать переменные окружения:
+set -a
+. ./.env
+set +a
+.venv/bin/python -m src.bot.main_flats_bot
+# В другом терминале с теми же переменными:
+.venv/bin/python -m src.service.main_flats_parser
+```
 
-- agency of the landlord directly
+Для существующей БД сначала выполнить `deploy/001_unique_users.sql` после резервной копии.
+Новая БД создаётся по `schema.sql`. Рабочие процессы запускать через модули `python -m`,
+старые команды `python src/.../main_flats_*.py` больше не поддерживаются.
 
-- nearest subway and distance to it
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m src.service.manage status
+```
 
-after that you will be receiving ads as someone post something suitable.
+Первый успешный опрос каждого источника запоминает текущую выдачу без массовой
+рассылки старых объявлений. В дальнейшем история переживает перезапуск.
+Проверенные объявления попадают в постоянную очередь отдельно для каждого получателя.
+Повторы выполняются после сбоев; неисправимые элементы сохраняются для ручного разбора.
+При неоднозначном сетевом таймауте Telegram возможна повторная доставка — API не даёт
+ключа идемпотентности. За цикл читается до `MAX_PAGES`; при превышении cursor сохраняется для следующего цикла и вызывается критический сигнал.
 
-## To use it as a user find it in telegram [here](https://t.me/flats_minsk_bot)
-
-or simply by username @flats_minsk_bot
-
-  
-
-## Sources available now
-
-  
-
-- Onliner
-
-- Kufar
-
-  
-
-But anyone may contribute and expand this list. You may check documentation to learn more
-
-  
-
-## Documentation
-
-  
-
-For more technical information check [docs](./docs/index.md)
-
-  
-
-## Support
-
-  
-
-If you have any ideas, wishes, questions, offers or gratitude, you are welcome to reach me here
-
-  
-
-- [telegram](https://t.me/bot_dealla)
-
-- <grakovich-e@yandex.by>
+Бот: [@flats_minsk_bot](https://t.me/flats_minsk_bot).

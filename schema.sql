@@ -6,7 +6,7 @@ CREATE DATABASE flats_bot;
 
 CREATE TABLE IF NOT EXISTS users (
             id serial PRIMARY KEY,
-            id_tg bigint not null,
+            id_tg bigint UNIQUE not null,
             username varchar(51) default NULL,
             isactive boolean default false,
             jointime timestamp without time zone default CURRENT_TIMESTAMP(1),

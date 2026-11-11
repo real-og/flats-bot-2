@@ -1,0 +1,29 @@
+[Unit]
+Description=Apartment search Telegram interface
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=flatsbot
+Group=flatsbot
+WorkingDirectory=/opt/flats-bot
+EnvironmentFile=/etc/flats-bot.env
+Environment=PYTHONUNBUFFERED=1
+Environment=TZ=Europe/Minsk
+ExecStart=/opt/flats-bot/.venv/bin/python -m src.bot.main_flats_bot
+Restart=always
+RestartSec=15
+TimeoutStopSec=90
+StateDirectory=flats-bot
+LogsDirectory=flats-bot
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/flats-bot /var/log/flats-bot
+
+[Install]
+WantedBy=multi-user.target

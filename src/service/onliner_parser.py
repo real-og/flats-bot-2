@@ -1,124 +1,70 @@
-import requests
-from bs4 import BeautifulSoup
-import logging
-import time
-from ad import Ad
+import re
+from src.service.ad import Ad
+from src.shared.towns import normalize_town
 from src.shared.subway_map import get_closest_subway
-from src.shared.logic import get_city_by_cords
-from collections import deque
-
-
-error_timeout = 15
-regular_timeout = 10
 
 onliner_url = "https://r.onliner.by/sdapi/ak.api/search/apartments"
-onliner_params = {'bounds[lb][lat]': '45.41737821965764',
-                  'bounds[lb][long]': '19.53972860486743',
-                  'bounds[rt][lat]': '56.686967637946275',
-                  'bounds[rt][long]': '32.15970564951255',
-                  'order': 'created_at:desc',
-                  'page': '1',
-                  'v': '0.2754033164126508'}
+onliner_params = {"order": "created_at:desc", "page": "1"}
 
 
-def init_used_ids_onliner():
-    init_ids = [0 for i in range(10)]  # to keep used_ids in collection bigger then amount of received ads
-    response = requests.get(onliner_url, onliner_params)
-    try:
-        onliner_ads = response.json().get('apartments', [])
-    except Exception:
-        onliner_ads = []
-        logging.error(f"Не удалось получить словарь при инициализации ОНЛАЙНЕР\n{response[:100]}")
-    if len(onliner_ads) == 0:
-        logging.warning('Онлайнер проблема с запросом инициализации')
-    for onliner_ad in onliner_ads:
-        init_ids.append(onliner_ad.get('id'))
-    init_ids.reverse()
-    return init_ids
+def address_town(address):
+    parts = [p.strip() for p in address.split(",")]
+    if parts and parts[0] in ("Беларусь", "Республика Беларусь"):
+        parts.pop(0)
+    # Skip explicitly labelled region/district, do not guess by nearest city.
+    parts = [
+        p
+        for p in parts
+        if not re.search(r"область|район|обл\.|р-н|сельский (?:совет|Совет)", p, re.I)
+    ]
+    if not parts:
+        raise ValueError("No settlement in Onliner address")
+    town = re.sub(
+        r"^(?:(?:г|д|аг|пос)\.\s*|(?:город|деревня|агрогородок)\s+)",
+        "",
+        parts[0],
+        flags=re.I,
+    )
+    if (
+        not town
+        or any(c.isdigit() for c in town)
+        or re.search(r"ул\.|улица|проспект", town, re.I)
+    ):
+        raise ValueError("Unrecognized Onliner address")
+    return normalize_town(town)
 
 
-def generate_ad_from_onliner(onliner_ad: dict):
-
-    photos = []
-    if onliner_ad.get('photo'):
-        photos.append(onliner_ad.get('photo'))
-    cost = onliner_ad.get('price', dict()).get('amount')
-    landlord = onliner_ad.get('contact', dict()).get('owner')
-    if landlord is True:
-        landlord = 'Собственник'
-    elif landlord is False:
-        landlord = 'Агентство'
-    lat = onliner_ad.get('location', dict()).get('latitude')
-    lon = onliner_ad.get('location', dict()).get('longitude')
-    town = get_city_by_cords(lat, lon)
-
-    rooms_amount = onliner_ad.get('rent_type')
-    if rooms_amount == 'room':
-        rooms_amount = 'Комната'
-    elif rooms_amount is not None:
-        rooms_amount = rooms_amount[0]
-
-    link = onliner_ad.get('url')
-    source = 'onliner'
-    subway = get_closest_subway(lat, lon)
-    subway_dist = None
-    subway_name = None
-    if subway:
-        subway_dist = subway.distance_to(lat, lon)
-        subway_name = subway.name
-
-    author_name = 'Не найдено'
-    try:
-        response_to_find_name = requests.get(link)
-        soup = BeautifulSoup(response_to_find_name.text, 'html.parser')
-
-        author_block = soup.find('div', class_='apartment-info__sub-line apartment-info__sub-line_extended')
-        author_name = author_block.text.strip()
-    except:
-        logging.error("ОЛАЙНЕР ошибка при попытке достать имя")
-
-
-    return Ad(town, photos, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist, author_name)
-
-
-def poll_onliner():
-    onliner_used_ids = deque(init_used_ids_onliner())
-    # onliner_used_ids = deque()
-
-    while True:
-        try:
-            response = requests.get(onliner_url, onliner_params)
-        except Exception:
-            logging.error("ОЛАЙНЕР ошибка во время запроса")
-            time.sleep(error_timeout)
-            continue
-
-        if response.status_code != 200:
-            logging.warning(f'Ответ ОНЛАЙНЕРА не 200, первые 100 символов:\n{response.text[:100]}')
-            time.sleep(error_timeout)
-            continue
-        try:
-            onliner_ads = response.json().get('apartments')
-
-            if onliner_ads is None or len(onliner_ads) == 0:
-                logging.warning(f'ОНЛАЙНЕР не вернул объявления:\n{onliner_ads[:100]}')
-                continue
-
-            for onliner_ad in onliner_ads:
-                ad_id = onliner_ad.get('id')
-
-                if ad_id is None:
-                    logging.warning(f'ОНЛАЙНЕР объявление не имеет id:\n{onliner_ad}')
-
-                if ad_id not in onliner_used_ids:
-                    onliner_used_ids.append(ad_id)
-                    onliner_used_ids.popleft()
-                    ad = generate_ad_from_onliner(onliner_ad)
-                    ad.save()
-                    ad.broadcast()
-
-        except Exception:
-            logging.exception('ОНЛАЙНЕР попытка взять JSON ответа не удалась')
-
-        finally:
-            time.sleep(regular_timeout)
+def generate_ad_from_onliner(raw):
+    location = raw.get("location") or {}
+    lat, lon = location.get("latitude"), location.get("longitude")
+    if lat is not None and lon is not None:
+        lat, lon = float(lat), float(lon)
+    town = address_town(location.get("address") or location.get("user_address") or "")
+    subway = get_closest_subway(lat, lon) if town == "Минск" else None
+    price = raw.get("price") or {}
+    cost = price.get("converted", {}).get("USD", {}).get("amount")
+    if cost is None and price.get("currency") == "USD":
+        cost = price.get("amount")
+    owner = (raw.get("contact") or {}).get("owner")
+    rent = raw.get("rent_type") or ""
+    rooms = "Комната" if rent == "room" else rent.split("_")[0]
+    if rooms != "Комната" and not rooms.isdigit():
+        raise ValueError("Invalid rent type")
+    return Ad(
+        town,
+        [raw["photo"]] if raw.get("photo") else [],
+        cost,
+        "Собственник"
+        if owner is True
+        else "Агентство"
+        if owner is False
+        else "Не указано",
+        lat,
+        lon,
+        rooms,
+        raw.get("url"),
+        "onliner",
+        subway.name if subway else None,
+        subway.distance_to(lat, lon) if subway else None,
+        "Не указано",
+    )
