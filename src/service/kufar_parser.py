@@ -1,139 +1,83 @@
-import requests
-import logging
-import time
-from ad import Ad
+from decimal import Decimal
+from src.service.ad import Ad
+from src.shared.towns import normalize_town
 from src.shared.subway_map import get_closest_subway
-from collections import deque
-
-
-error_timeout = 15
-regular_timeout = 10
 
 kufar_url = "https://api.kufar.by/search-api/v2/search/rendered-paginated"
-kufar_params = {'cat': '1010',
-                'cur': 'BYR',
-                'gtsy': 'country-belarus',
-                'lang': 'ru',
-                'size': '30',
-                'typ': 'let',
-                'sort': 'lst.d'}
+kufar_params = {
+    "cat": "1010",
+    "cur": "BYR",
+    "gtsy": "country-belarus",
+    "lang": "ru",
+    "size": "100",
+    "typ": "let",
+    "sort": "lst.d",
+}
 
 
-def init_used_ids_kufar():
-    init_ids = []
-    response = requests.get(kufar_url, kufar_params)
-    try:
-        kufar_ads = response.json().get('ads', [])
-    except Exception:
-        kufar_ads = []
-        logging.error(f"Не удалось получить словарь при инициализации КУФАРА\n{response[:100]}")
-    if len(kufar_ads) == 0:
-        logging.warning('Куфар проблема с запросом инициализации')
-    for kufar_ad in kufar_ads:
-        init_ids.append(kufar_ad.get('ad_id'))
-    init_ids.reverse()
-    return init_ids
-
-
-def generate_ad_from_kufar(kufar_ad: dict):
-
-    ad_params = kufar_ad.get('ad_parameters', [])
-    rooms_amount = None
-    town = None
-    lat = None
-    lon = None
-    for param in ad_params:
-        if param.get('pl') == 'Регион' and param.get('vl') == 'Минск':
-            town = 'Минск'
-        if param.get('pl') == 'Область' and param.get('vl') == 'Минск':
-            town = 'Минск'
-        if param.get('pl') == 'Город / Район' and (town != 'Минск'):
-            town = param.get('vl')
-        if param.get('p') == 'coordinates':
-            lon = param.get('v')[0]
-            lat = param.get('v')[1]
-        if param.get('p') == 'rooms':
-            rooms_amount = param.get('v')
-
-    subway = get_closest_subway(lat, lon)
-    subway_dist = None
-    subway_name = None
-    if subway:
-        subway_dist = subway.distance_to(lat, lon)
-        subway_name = subway.name
-
-    source = 'kufar'
-    link = kufar_ad.get('ad_link')
-    cost = str(kufar_ad.get('price_usd'))
-    if cost and '.' not in cost:
-        cost = f"{cost[:-2]}.{cost[-2:]}"
-
-    if kufar_ad.get('company_ad') is True:
-        landlord = 'Агентство'
-    elif kufar_ad.get('company_ad') is False:
-        landlord = 'Собственник'
-    else:
-        landlord = None
-
-    image_urls = []
-    for img in kufar_ad['images'][:9]:
-        image_urls.append(f"https://rms4.kufar.by/v1/gallery/{img['path']}")
-
-    author_name = 'Не указано'
-    account_params = kufar_ad.get('account_parameters', [])
-    for param in account_params:
-        if param.get('contact_person'):
-            author_name = param.get('v')
-        if param.get('p') == 'name':
-            author_name = param.get('v')
-
-
-    return Ad(town, image_urls, cost, landlord, lat, lon, rooms_amount, link, source, subway_name, subway_dist, author_name)
-
-
-def poll_kufar():
-
-    kufar_used_ids = deque(init_used_ids_kufar())
-    # kufar_used_ids = deque()
-
-    while True:
-
-        kufar_params['size'] = 15
-        try:
-            response = requests.get(kufar_url, kufar_params)
-        except Exception:
-            logging.error("КУФАР ошибка во время запроса")
-            time.sleep(error_timeout)
-            continue
-
-        if response.status_code != 200:
-            logging.warning(f'Ответ КУФАРА не 200, первые 100 символов:\n{response.text[:100]}')
-            time.sleep(error_timeout)
-            continue
-        try:
-            kufar_ads = response.json().get('ads')
-            
-
-            if kufar_ads is None or len(kufar_ads) == 0:
-                logging.warning(f'КУФАР не вернул объявления:\n{kufar_ads[:100]}')
-                continue
-
-            for kufar_ad in kufar_ads:
-                ad_id = kufar_ad.get('ad_id')
-                
-
-                if ad_id is None:
-                    logging.warning(f'КУФАР объявление не имеет id:\n{kufar_ad}')
-
-                if ad_id not in kufar_used_ids:
-                    kufar_used_ids.append(ad_id)
-                    kufar_used_ids.popleft()
-                    ad = generate_ad_from_kufar(kufar_ad)
-                    ad.save()
-                    ad.broadcast()
-
-        except Exception:
-            logging.exception('КУФАР попытка взять JSON ответа')
-
-        finally:
-            time.sleep(regular_timeout)
+def generate_ad_from_kufar(raw, room=False):
+    params = {
+        p["p"]: p
+        for p in raw.get("ad_parameters", [])
+        if isinstance(p, dict) and "p" in p
+    }
+    town = next(
+        (
+            params[p].get("vl")
+            for p in ("region", "region2")
+            if params.get(p, {}).get("vl") == "Минск"
+        ),
+        None,
+    )
+    town = town or params.get("area", {}).get("vl")
+    town = normalize_town(town)
+    coords = params.get("coordinates", {}).get("v")
+    lon, lat = coords if isinstance(coords, list) and len(coords) == 2 else (None, None)
+    if lat is not None:
+        lat, lon = float(lat), float(lon)
+    subway = get_closest_subway(lat, lon) if town == "Минск" else None
+    price = raw.get("price_usd")
+    if price is None:
+        price = next(
+            (
+                p["price"]
+                for p in raw.get("calculator", [])
+                if p.get("currency") == "USD"
+            ),
+            None,
+        )
+    if price is None:
+        raise ValueError("Missing USD price")
+    # Kufar represents monetary values as integer minor units.
+    cost = float(Decimal(str(price)) / 100)
+    author = next(
+        (
+            p.get("v")
+            for p in raw.get("account_parameters", [])
+            if p.get("p") in ("name", "contact_person")
+        ),
+        "Не указано",
+    )
+    owner = raw.get("company_ad")
+    return Ad(
+        town,
+        [
+            f"https://rms4.kufar.by/v1/gallery/{i['path']}"
+            for i in raw.get("images", [])
+            if i.get("path")
+        ],
+        cost,
+        "Агентство"
+        if owner is True
+        else "Собственник"
+        if owner is False
+        else "Не указано",
+        lat,
+        lon,
+        "Комната" if room else str(params.get("rooms", {}).get("v") or ""),
+        raw.get("ad_link"),
+        "kufar",
+        subway.name if subway else None,
+        subway.distance_to(lat, lon) if subway else None,
+        author,
+    )

@@ -17,3 +17,11 @@ test.txt
 test.json
 .pytest_cache
 readme_private.txt
+
+.venv/
+.venv311/
+data/
+logs/
+*.sqlite3*
+
+!src/shared/config.py
